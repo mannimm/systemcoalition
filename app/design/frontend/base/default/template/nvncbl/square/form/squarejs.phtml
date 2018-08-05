@@ -1,0 +1,102 @@
+<?php
+$store = Mage::app()->getStore();
+if ($store->getConfig('payment/nvncbl_square/square_js'))
+{
+	$mode = $store->getConfig('payment/nvncbl_square/square_mode');
+	$path = "payment/nvncbl_square/square_{$mode}_pk";
+	$publishableKey = $store->getConfig($path);
+
+	// Also get the customer address when AVS is enabled
+	if (Mage::getStoreConfig('payment/nvncbl_square/avs'))
+	{
+		$billingAddress = Mage::helper('nvncbl_square')->getBillingAddress();
+
+		if (!empty($billingAddress))
+		{
+			$address_line1 = $billingAddress['address_line1'];
+			$address_zip = $billingAddress['address_zip'];
+		}
+	}
+
+	// Sanitization
+	if (!empty($address_line1))
+	{
+		$address_line1 = preg_replace("/\r|\n/", " ", $address_line1);
+		$address_line1 = addslashes($address_line1);
+	}
+?>
+
+<script type="text/javascript">
+
+	if (typeof Square == "undefined")
+	{
+		var resource = document.createElement('script');
+		resource.src = "https://js.squareup.com/v2/paymentform";
+		var script = document.getElementsByTagName('script')[0];
+		script.parentNode.insertBefore(resource, script);
+
+		setTimeout(function(){
+			initSquare();
+			paymentForm.build();
+		}, 1000);
+	}
+
+
+	<?php /*
+	avs_enabled = <?php echo (Mage::getStoreConfig('payment/nvncbl_square/avs') ? 'true' : 'false') ?>;
+	<?php if (!empty($address_line1)): ?>
+	// These are intendedly global variables
+	avs_address_line1 = '<?php echo $address_line1; ?>';
+	avs_address_zip = '<?php echo $address_zip; ?>';
+	<?php endif; ?>
+
+	var form = document.getElementById('payment_form_nvncbl_square');
+	if (form) form.onclick = enableInputs;
+
+	// Front end bindings
+	// Default Magento Onepage checkout
+	var btn = document.getElementById('payment-buttons-container');
+	if (btn) btn = btn.getElementsByTagName('button');
+	if (btn && btn[0]) btn = btn[0];
+	if (btn)
+	{
+		btn.onclick = function()
+		{
+			if (payment.currentMethod != 'nvncbl_square')
+				return payment.save();
+
+			createSquareToken(function(err)
+			{
+				if (err)
+					alert(err);
+				else
+					payment.save();
+			});
+		};
+	}
+
+	// Multi-shipping payment form
+	window.addEventListener("load", initMultiShippingForm);
+
+	// Back end
+	setTimeout(function(){
+		btn = document.getElementById('order-totals');
+		if (btn) btn = btn.getElementsByTagName('button');
+		if (btn && btn[0]) btn = btn[0];
+		if (btn) btn.onclick = function()
+		{
+			var radioButton = document.getElementById('p_method_nvncbl_square');
+			if (radioButton && !radioButton.checked)
+				return order.submit();
+
+			createSquareToken(function(err)
+			{
+				if (err)
+					alert(err)
+				else
+					order.submit();
+			});
+		};
+	}, 1000);*/ ?>
+</script>
+<?php } ?>

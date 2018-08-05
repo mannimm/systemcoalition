@@ -1,0 +1,45 @@
+<?php if (($_products = $this->getProductCollection()) && $_products->getSize()): ?>
+
+<div class="opportunities-container narrow-container">
+
+	<h2 class="subtitle"><?php echo $this->__('Upcoming Opportunities') ?></h2>
+
+	<div class="opportunities-filter">
+		<div class="opportunities-type active">Students</div>
+		<div class="opportunities-type">Teachers</div>
+		<div class="opportunities-type">Businesses</div>
+		<div class="opportunities-type view-all">View All</div>
+	</div>
+
+	<?php $_columnCount = $this->getColumnCount(); ?>
+		<ul class="products-grid products-grid--max-3-col">
+		<?php $i=0; foreach ($_products->getItems() as $_product): ?>
+			<li class="item<?php if(($i-1)%$_columnCount==0): ?> first<?php elseif($i%$_columnCount==0): ?> last<?php endif; ?>">
+				<a href="<?php echo $_product->getProductUrl() ?>" title="<?php echo $this->escapeHtml($_product->getName()) ?>" class="product-image"><img src="<?php echo $this->helper('catalog/image')->init($_product, 'small_image')->resize(135) ?>" width="135" height="135" alt="<?php echo $this->escapeHtml($_product->getName()) ?>" /></a>
+				<h3 class="product-name"><a href="<?php echo $_product->getProductUrl() ?>" title="<?php echo $this->escapeHtml($_product->getName()) ?>"><?php echo $this->escapeHtml($_product->getName()) ?></a></h3>
+				<?php echo $this->getReviewsSummaryHtml($_product, 'short') ?>
+				<?php echo $this->getPriceHtml($_product, true, '-new') ?>
+				<div class="actions">
+					<?php if($_product->isSaleable()): ?>
+						<?php /*<button type="button" title="<?php echo Mage::helper('core')->quoteEscape($this->__('Add to Cart')) ?>" class="button btn-cart" onclick="setLocation('<?php echo $this->getAddToCartUrl($_product) ?>')"><span><span><?php echo $this->__('Add to Cart') ?></span></span></button>*/ ?>
+						<button type="button" title="<?php echo Mage::helper('core')->quoteEscape($this->__('Add to Cart')) ?>" class="button btn-cart" onclick="setLocation('<?php echo $this->getAddToCartUrl($_product) ?>')"><span><span><?php echo $this->__('RSVP') ?></span></span></button>
+					<?php else: ?>
+						<p class="availability out-of-stock"><span><?php echo $this->__('Out of stock') ?></span></p>
+					<?php endif; ?>
+					<ul class="add-to-links">
+						<?php if ($this->helper('wishlist')->isAllow()) : ?>
+							<li><a href="<?php echo $this->getAddToWishlistUrl($_product) ?>" class="link-wishlist"><?php echo $this->__('Add to Wishlist') ?></a></li>
+						<?php endif; ?>
+						<?php if ($_compareUrl = $this->getAddToCompareUrl($_product)): ?>
+							<li><span class="separator">|</span> <a href="<?php echo $_compareUrl ?>" class="link-compare"><?php echo $this->__('Add to Compare') ?></a></li>
+						<?php endif; ?>
+					</ul>
+				</div>
+			</li>
+		<?php endforeach; ?>
+		</ul>
+
+	<div style="clear:both;"></div>
+
+</div>
+<?php endif; ?>

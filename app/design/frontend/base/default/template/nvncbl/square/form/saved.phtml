@@ -1,0 +1,108 @@
+<?php
+
+$cards = $this->square->getCustomerCards();
+
+if (!empty($cards)): ?>
+	<li>
+		<ul class="saved-cards" id="saved-cards">
+			<?php foreach ($cards as $key => $card): ?>
+			<li>
+				<input type="radio" name="payment[cc_saved]" value="<?php echo $card->id . ':' . $card->type . ':' . $card->last4; ?>" id="<?php echo $card->id; ?>" class="select">
+				<label for="<?php echo $card->id; ?>">
+					<span class="type <?php echo $card->type ?>">
+						<?php echo (empty($card->type) ? $this->__('Card') : $card->type); ?>
+					</span>
+					<span class="last4 nvncbl-square-fade"><?php echo $this->__('ending in'); ?> <?php echo $card->last4; ?></span>
+					<span class="exp nvncbl-square-fade"><?php echo $this->__('expires'); ?>
+						<?php echo str_pad($card->exp_month,2,'0',STR_PAD_LEFT); ?>/<?php echo $card->exp_year; ?>
+					</span>
+				</label>
+			</li>
+			<?php endforeach; ?>
+			<li>
+				<input type="radio" name="payment[cc_saved]" value="new_card" class="select validate-one-required-by-name" id="new_card">
+				<label for="new_card">
+					<span class="type <?php echo $card->type ?>"><?php echo $this->__('Use a new card'); ?></span>
+				</label>
+			</li>
+		</ul>
+		<?php // Because we don't want to mess with the theme ?>
+		<style type="text/css">
+		ul#payment_form_<?php echo $_code ?> li {
+			display: block;
+		}
+		ul#payment_form_<?php echo $_code ?> li.square-new {
+			display: none;
+		}
+		ul#payment_form_<?php echo $_code ?>.square-new li.square-new {
+			display: block;
+		}
+		.sp-methods ul.saved-cards li label {
+			float: none;
+		}
+		ul.saved-cards {
+			margin-top: 14px;
+		}
+		ul.saved-cards input.select {
+			position: relative;
+			top: -1px;
+		}
+		ul.saved-cards span {
+			display: inline-block;
+		}
+		ul.saved-cards span.type {
+			font-weight: bold;
+			margin-left: 3px;
+		}
+		ul.saved-cards span.exp {
+			float: right;
+		}
+		ul.saved-cards label {
+			display: inline;
+		}
+		ul.saved-cards span.nvncbl-square-fade {
+			color: #aaa;
+			font-weight: normal;
+		}
+		</style>
+		<script type="text/javascript">
+		var isCheckbox = function(input)
+		{
+			return input.attributes && input.attributes.length > 0 &&
+				(input.type === "checkbox" || input.attributes[0].value === "checkbox" || input.attributes[0].nodeValue === "checkbox");
+		};
+		// Triggered when the user clicks a saved card radio button
+		var useCard = function(evt)
+		{
+			var inputs = document.querySelectorAll(".square-input");
+			var parentId = 'payment_form_<?php echo $_code ?>';
+
+			// User wants to use a new card
+			if (this.value == 'new_card') {
+				document.getElementById(parentId).className = "form-list square-new";
+				for (var i in inputs) {
+					if (isCheckbox(inputs[i])) continue;
+					if (inputs[i].className)
+						inputs[i].className += " required-entry";
+					else
+						inputs[i].className = "required-entry";
+				}
+			}
+			// User wants to use a saved card
+			else {
+				document.getElementById(parentId).className = "form-list";
+				for (var i in inputs) {
+					if (isCheckbox(inputs[i])) continue;
+					if (inputs[i].className)
+						inputs[i].className = inputs[i].className.replace(/required-entry/g,"");
+				}
+			}
+		}
+
+		var inputs = document.querySelectorAll('#saved-cards input');
+		for (var i = 0; i < inputs.length; i++) {
+			inputs[i].onclick = useCard;
+		}
+		</script>
+	</li>
+<?php endif; ?>

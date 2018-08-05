@@ -1,0 +1,83 @@
+<?php
+
+$collection = Mage::getModel('cms/block')->getCollection();
+$static_blocks = array();
+
+foreach( $collection as $key => $static_block ){
+	if( $static_block->getIsActive() && strpos( $static_block->getIdentifier(), 'slider-panel-' ) === 0 ){
+		$static_blocks[] = $static_block;
+	}
+}
+
+?>
+
+<script type="text/javascript" language="javascript">
+
+	/*function homepageSliderResize(){
+		jQuery("#homepageslider_container").parent().css('width', '100%' );
+		jQuery("#homepageslider_container").parent().css('height', 'auto' );
+		opts.width = jQuery("#homepageslider_container").parent().width();
+		jQuery("#homepageslider_container :first-child").first().css('height','auto');
+		opts.height = jQuery("#homepageslider_container :first-child").first().height();
+		jQuery("#homepageslider_container").parent().css('width', opts.width );
+		jQuery("#homepageslider_container").parent().css('height', opts.height );
+		jQuery("#homepageslider_nav").html('');
+		//jQuery("#homepageslider_container").cycle('destroy');
+		//jQuery("#homepageslider_container").cycle(opts);
+	}*/
+	opts = {
+		fx: 'fade', // choose your transition type, ex: fade, scrollUp, shuffle, etc...
+		timeout: 1000,
+		pager:  '#homepageslider_nav',
+		prev: '#homepageslider_prev',
+		next: '#homepageslider_next'
+	};
+
+	//jQuery(window).load(function() {
+
+		/*jQuery( document ).ready( function(){
+			homepageSliderResize();
+		} );
+
+		jQuery(window).resize(function(){
+			homepageSliderResize();
+		});*/
+
+		/*jQuery( '#homepageslider_container' ).on('swiperight', function(){
+			jQuery( '#homepageslider_prev' ).click();
+		} );
+		jQuery( '#homepageslider_container' ).on('swipeleft', function(){
+			jQuery( '#homepageslider_next' ).click();
+		} );*/
+
+	//});
+</script>
+
+<div style="position:relative; width:100%;">
+
+	<div id="homepageslider_container" class="cycle-slideshow" data-cycle-slides="div.sliderpanel_container">
+
+		<?php if( count( $static_blocks ) > 1 ){ ?>
+			<a id="homepageslider_prev" class="cycle-prev" href="#" onclick="javascript:return false;" title="Previous" style="float:left;"><img src="<?php echo $this->getSkinUrl('images/slider_controls/left_arrow_slider_control.png'); ?>" alt="Back" /></a>
+			<a id="homepageslider_next" class="cycle-next" href="#" onclick="javascript:return false;" title="Next" style="float:left;"><img src="<?php echo $this->getSkinUrl('images/slider_controls/right_arrow_slider_control.png'); ?>" alt="Forward" /></a>
+		<?php } ?>
+
+	<?php
+		$i = 1; foreach( $static_blocks as $static_block ){
+	?>
+		<div id="homepageslider_<?php echo $i; ?>" class="sliderpanel_container">
+			<?php echo $this->getLayout()->createBlock('cms/block')->setBlockId( $static_block->getIdentifier() )->toHtml(); ?>
+		</div>
+	<?php
+		$i++; }
+	?>
+
+		<?php /*if( count( $static_blocks) > 1 ){ ?>
+			<div id="homepageslider_nav_container" class="cycle-pager">
+				<div id="homepageslider_nav" style="float:left; margin-left:5px; margin-right:5px;"></div>
+			</div>
+		<?php }*/ ?>
+
+	</div>
+
+</div>

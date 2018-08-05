@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<layout version="0.1.0">
+
+	<menubuilderpro_configure_index>
+		<reference name="content">
+			<block type="menubuilderpro/adminhtml_menu" name="menu.grid.container" />
+		</reference>
+	</menubuilderpro_configure_index>
+
+	<menubuilderpro_configure_edit>
+		<reference name="head">
+			<action method="addJs"><script>nvncbl_menubuilderpro/jquery-1.10.2.min.js</script></action>
+			<action method="addJs"><script>nvncbl_menubuilderpro/jquery-ui-1.10.3.custom.min.js</script></action>
+			<action method="addJs"><script>nvncbl_menubuilderpro/menubuilderpro.js</script></action>
+			<action method="addItem"><type>skin_css</type><name>nvncbl_menubuilderpro/menubuilderpro.css</name><params /></action>
+		</reference>
+		<reference name="menu">
+			<action method="setActive"><menupath>cms/menubuilderpro</menupath></action>
+		</reference>
+		<reference name="content">
+			<block type="menubuilderpro/adminhtml_menu_edit" name="menubuilderpro.menu.edit" template="nvncbl_menubuilderpro/menu/edit.phtml">
+				<block type="menubuilderpro/adminhtml_menu_edit_tree" name="menubuilderpro.menu.tree" template="nvncbl_menubuilderpro/menu/edit/tree.phtml" />
+				<block type="menubuilderpro/adminhtml_menu_edit_options" name="menubuilderpro.menu.options" template="nvncbl_menubuilderpro/menu/edit/options.phtml" />
+			</block>
+		</reference>
+	</menubuilderpro_configure_edit>
+
+</layout>

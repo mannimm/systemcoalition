@@ -1,0 +1,16 @@
+<?php
+	$tree = $this->getTree();
+?>
+
+<script type="text/javascript" language="javascript">
+	<?php if( $tree ){ ?>
+		var mbConfig = <?php echo Mage::helper('core')->jsonEncode( $tree ); ?>;
+	<?php } else { ?>
+		var mbConfig = { 'subitems' : [] };
+	<?php } ?>
+</script>
+
+<div class="menubuilder-tree-container">
+	<div class="menubuilder-tree"></div>
+	<button title="Add Item" type="button" class="scalable add" onclick="javascript:addItem();" style=""><span><span><span>Add Item</span></span></span></button>
+</div>

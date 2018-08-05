@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<config>
+	<modules>
+		<Nvncbl_MenuBuilderPro>
+			<active>true</active>
+			<codePool>community</codePool>
+		</Nvncbl_MenuBuilderPro>
+	</modules>
+</config>

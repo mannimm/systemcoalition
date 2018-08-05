@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<layout version="0.1.0">
+	<default>
+		<reference name="root">
+			<block type="core/text_list" name="before_main" as="before_main" translate="label">
+				<label>Before Main Content Area</label>
+			</block>
+		</reference>
+		<reference name="head">
+			<action method="addItem"><type>skin_js</type><name>js/script.js</name></action>
+		</reference>
+		<reference name="footer">
+			<block type="newsletter/subscribe" name="footer.newsletter" as="newsletter" before="footer_store_language" template="newsletter/subscribe.phtml"/>
+		</reference>
+	</default>
+	<contacts_index_index>
+		<reference name="root">
+			<action method="setTemplate"><template>page/1column.phtml</template></action>
+			<action method="unsetChild"><alias>breadcrumbs</alias></action>
+			<block type="page/html_breadcrumbs" name="breadcrumbs" as="breadcrumbs">
+				<action method="addCrumb">
+					<crumbName>home</crumbName>
+					<crumbInfo><label>Home</label><title>Home</title><link>/</link></crumbInfo>
+				</action>
+				<action method="addCrumb">
+					<crumbName>contacts</crumbName>
+					<crumbInfo><label>Contact us</label><title>Contact us</title></crumbInfo>
+				</action>
+			</block>
+		</reference>
+		<reference name="left">
+			<block type="core/text_list" name="left.menu" as="topMenu" translate="label">
+				<block type="page/html_topmenu" name="catalog.leftnav" template="page/html/leftmenu.phtml">
+					<block type="page/html_topmenu_renderer" name="catalog.leftnav.renderer" template="page/html/topmenu/renderer.phtml"/>
+				</block>
+			</block>
+		</reference>
+	</contacts_index_index>
+	<catalog_category_layered>
+		<reference name="root">
+			<action method="setTemplate"><template>page/2columns-left.phtml</template></action>
+		</reference>
+	</catalog_category_layered>
+</layout>

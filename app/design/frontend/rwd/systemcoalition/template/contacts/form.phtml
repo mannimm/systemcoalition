@@ -1,0 +1,62 @@
+<div id="messages_product_view"><?php echo $this->getMessagesBlock()->toHtml() ?></div>
+<div class="page-title">
+	<h1><?php echo Mage::helper('contacts')->__('Contact Us') ?></h1>
+</div>
+
+<div class="col2-set">
+	<div class="col-1">
+		<p>Connect with Us at
+		<br /><br />Bloomsbury Sq Studio + Shop
+		<br /><br />942 Summit Avenue, Jersey City, NJ 07307
+		<br /><br /><a href="mailto:niambi@bloomsburysq.com">niambi@bloomsburysq.com</a>
+		<br /><br />201-253-5405<br /><br /></p>
+	</div>
+	<div class="col-2">
+		<form action="<?php echo $this->getFormAction(); ?>" id="contactForm" method="post">
+			<div class="fieldset">
+				<h2 class="legend"><?php echo Mage::helper('contacts')->__('Contact Information') ?></h2>
+				<ul class="form-list">
+					<li class="fields">
+						<div class="field">
+							<label for="name" class="required"><em>*</em><?php echo Mage::helper('contacts')->__('Name') ?></label>
+							<div class="input-box">
+								<input name="name" id="name" title="<?php echo Mage::helper('core')->quoteEscape(Mage::helper('contacts')->__('Name')) ?>" value="<?php echo $this->escapeHtml($this->helper('contacts')->getUserName()) ?>" class="input-text required-entry" type="text" />
+							</div>
+						</div>
+						<div class="field">
+							<label for="email" class="required"><em>*</em><?php echo Mage::helper('contacts')->__('Email') ?></label>
+							<div class="input-box">
+								<input name="email" id="email" title="<?php echo Mage::helper('core')->quoteEscape(Mage::helper('contacts')->__('Email')) ?>" value="<?php echo $this->escapeHtml($this->helper('contacts')->getUserEmail()) ?>" class="input-text required-entry validate-email" type="text" />
+							</div>
+						</div>
+					</li>
+					<li>
+						<label for="telephone"><?php echo Mage::helper('contacts')->__('Telephone') ?></label>
+						<div class="input-box">
+							<input name="telephone" id="telephone" title="<?php echo Mage::helper('core')->quoteEscape(Mage::helper('contacts')->__('Telephone')) ?>" value="" class="input-text" type="text" />
+						</div>
+					</li>
+					<li class="wide">
+						<label for="comment" class="required"><em>*</em><?php echo Mage::helper('contacts')->__('Comment') ?></label>
+						<div class="input-box">
+							<textarea name="comment" id="comment" title="<?php echo Mage::helper('core')->quoteEscape(Mage::helper('contacts')->__('Comment')) ?>" class="required-entry input-text" cols="5" rows="3"></textarea>
+						</div>
+					</li>
+				</ul>
+			</div>
+			<div class="buttons-set">
+				<p class="required"><?php echo Mage::helper('contacts')->__('* Required Fields') ?></p>
+				<input type="text" name="hideit" id="hideit" value="" style="display:none !important;" />
+				<button type="submit" title="<?php echo Mage::helper('core')->quoteEscape(Mage::helper('contacts')->__('Submit')) ?>" class="button"><span><span><?php echo Mage::helper('contacts')->__('Submit') ?></span></span></button>
+			</div>
+		</form>
+		<script type="text/javascript">
+		//<![CDATA[
+			var contactForm = new VarienForm('contactForm', true);
+		//]]>
+		</script>
+
+	</div>
+</div>
+
+		<iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d12091.262479648!2d-74.05461108988986!3d40.74408247436596!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0xc5e6d6bb72a9f659!2sBloomsbury+Sq!5e0!3m2!1sen!2sus!4v1479237187951" width="600" height="450" frameborder="0" style="border:0" allowfullscreen></iframe>

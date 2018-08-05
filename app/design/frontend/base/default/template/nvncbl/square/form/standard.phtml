@@ -1,0 +1,137 @@
+<?php
+
+$_code = $this->getMethodCode();
+include_once 'squarejs.phtml';
+?>
+
+<?php if ($this->autoDetectCard()): ?>
+<style type="text/css">
+	<?php foreach ($this->getAcceptedCardTypes() as $code => $label): ?>
+	input#nvncbl_square_cc_number.cctype-<?php echo $code; ?> { background-image: url(<?php echo $this->getSkinUrl("nvncbl_square/img/$code.png"); ?>); }
+	<?php endforeach; ?>
+</style>
+<?php endif; ?>
+
+<style type="text/css">
+	.sq-input {
+	  border: 1px solid rgb(223, 223, 223);
+	  outline-offset: -2px;
+	  margin-bottom: 5px;
+	}
+	.sq-input--focus {
+	  /* Indicates how form inputs should appear when they have focus */
+	  outline: 5px auto rgb(59, 153, 252);
+	}
+	.sq-input--error {
+	  /* Indicates how form inputs should appear when they contain invalid values */
+	  outline: 5px auto rgb(255, 97, 97);
+	}
+</style>
+
+<ul class="form-list" id="payment_form_<?php echo $_code ?>" style="display:none;">
+
+	<!--
+	These div elements are the placeholder elements that are replaced by the
+	SqPaymentForm's iframes.
+	-->
+	<label>Card Number</label>
+	<div id="sq-card-number"></div>
+	<label>CVV</label>
+	<div id="sq-cvv"></div>
+	<label>Expiration Date</label>
+	<div id="sq-expiration-date"></div>
+	<label>Postal Code</label>
+	<div id="sq-postal-code"></div>
+
+	<form id="nonce-form" novalidate action="REPLACE_ME" method="post">
+
+		<!--
+		Whenever a nonce is generated, it's assigned as the value of this hidden
+		input field.
+		-->
+		<input type="hidden" id="card-nonce" name="payment[nonce]">
+
+		<!--
+		Clicking this Submit button kicks off the process to generate a card nonce
+		from the buyer's card information.
+		-->
+		<input type="button" onclick="paymentForm.requestCardNonce(); return false;" value="Submit" />
+	</form>
+
+	<?php /*<?php include 'saved.phtml'; ?>
+
+	<?php if ($this->showAcceptedCardTypes()): ?>
+	<li class="square-new">
+		<label for="<?php echo $_code ?>_cc_types"><?php echo $this->__('Accepted Card Types') ?></label>
+		<div class="input-box" id="nvncbl-square-accepted-cards">
+			<?php foreach ($this->getAcceptedCardTypes() as $code => $label): ?>
+				<img src="<?php echo $this->getSkinUrl("nvncbl_square/img/$code.png"); ?>" alt="<?php echo $label; ?>" id="nvncbl_square_<?php echo $code; ?>_type" />
+			<?php endforeach; ?>
+		</div>
+	</li>
+	<?php endif; ?>
+
+	<li class="square-new">
+		<label class="required" for="<?php echo $_code ?>_cc_owner"><em>*</em><?php echo $this->__('Name on Card') ?></label>
+		<div class="input-box">
+			<input type="text" title="<?php echo Mage::helper('payment')->__('Name on Card') ?>" class="required-entry square-input input-text" id="<?php echo $_code ?>_cc_owner" name="payment[cc_owner]" value="<?php echo $this->getInfoData('cc_owner') ?>"/>
+		</div>
+	</li>
+	<li class="square-new">
+		<label for="<?php echo $_code ?>_cc_number" class="required"><em>*</em><?php echo $this->__('Card Number') ?></label>
+		<div class="input-box">
+			<input type="text" id="<?php echo $_code ?>_cc_number" name="payment[cc_number]" title="<?php echo $this->__('Card Number') ?>" class="input-text validate-cc-number validate-cc-type required-entry square-input" value="" <?php echo $this->getOnKeyUpCardNumber(); ?> />
+		</div>
+	</li>
+	<li id="<?php echo $_code ?>_cc_type_exp_div" class="square-new">
+		<label for="<?php echo $_code ?>_expiration" class="required"><em>*</em><?php echo $this->__('Expiration Date') ?></label>
+		<div class="input-box">
+			<div class="v-fix">
+				<select id="<?php echo $_code ?>_expiration" name="payment[cc_exp_month]" class="month validate-cc-exp required-entry square-input">
+				<?php $_ccExpMonth = $this->getInfoData('cc_exp_month') ?>
+				<?php foreach ($this->getCcMonths() as $k=>$v): ?>
+					<option value="<?php echo $k?$k:'' ?>"<?php if($k==$_ccExpMonth): ?> selected="selected"<?php endif ?>><?php echo $v ?></option>
+				<?php endforeach ?>
+				</select>
+			</div>
+			<div class="v-fix">
+				<?php $_ccExpYear = $this->getInfoData('cc_exp_year') ?>
+				<select id="<?php echo $_code ?>_expiration_yr" name="payment[cc_exp_year]" class="year required-entry square-input">
+				<?php foreach ($this->getCcYears() as $k=>$v): ?>
+					<option value="<?php echo $k?$k:'' ?>"<?php if($k==$_ccExpYear): ?> selected="selected"<?php endif ?>><?php echo $v ?></option>
+				<?php endforeach ?>
+				</select>
+			</div>
+		</div>
+	</li>
+	<?php echo $this->getChildHtml() ?>
+	<?php if($this->hasVerification()): ?>
+	<li id="<?php echo $_code ?>_cc_type_cvv_div" class="square-new">
+		<label for="<?php echo $_code ?>_cc_cid" class="required"><em>*</em><?php echo $this->__('Card Verification Number') ?></label>
+		<div class="input-box">
+			<div class="v-fix">
+				<input type="text" title="<?php echo $this->__('Card Verification Number') ?>" class="input-text cvv required-entry square-input validate-cc-cvn" id="<?php echo $_code ?>_cc_cid" name="payment[cc_cid]" value="" autocomplete="off" />
+			</div>
+			<a href="#" class="cvv-what-is-this"><?php echo $this->__('What is this?') ?></a>
+		</div>
+	</li>
+	<?php endif; ?>
+	<?php if ($this->square->showSaveCardOption()): ?>
+	<li id="<?php echo $_code ?>_cc_save_div" class="square-new">
+		<div class="input-box">
+			<div class="v-fix">
+				<label for="<?php echo $_code ?>_cc_save">
+					<?php if ($this->square->alwaysSaveCard()): ?>
+						<input type="hidden" class="input-hidden square-input" id="<?php echo $_code ?>_cc_save" name="payment[cc_save]" value="1"/>
+					<?php else: ?>
+						<input type="checkbox" title="<?php echo $this->__('Save card for future purchases') ?>" class="input-checkbox square-input" id="<?php echo $_code ?>_cc_save" name="payment[cc_save]" checked="checked"/>
+						&nbsp;
+						<?php echo $this->__('Save card for future purchases') ?>
+					<?php endif; ?>
+				</label>
+			</div>
+		</div>
+	</li>
+	<?php endif; ?>*/ ?>
+
+</ul>

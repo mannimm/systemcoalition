@@ -1,0 +1,166 @@
+<div class="menubuilder-options entry-edit">
+
+	<form action="" onsubmit="javascript:saveItem(); return false;" method="post">
+
+		<div class="entry-edit-head">
+			<h4>Item Settings</h4>
+		</div>
+		<div class="item-tabs-container fieldset">
+			<table class="button-data">
+				<tbody>
+					<tr>
+						<th><label for="mbItemType">Item Type</label></th>
+						<td>
+							<select id="mbItemType" name="item_type">
+								<option value="basic">Basic</option>
+								<option value="customhtml">Custom HTML</option>
+								<option value="subcategories">Subcategories</option>
+								<option value="staticblock">CMS Static Block</option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<th><label for="mbLabel">Label</label></th>
+						<td><input type="text" id="mbLabel" name="label" value="" /></td>
+					</tr>
+					<tr>
+						<th><label for="mbCss">&lt;li&gt; class</label></th>
+						<td>
+							<input type="text" id="mbCss" name="css" value="" />
+							<br /><span class="comment">(separate multiple classes with a space)</span>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<div class="tabcontent tabcontent-basic">
+				<h3>Item Type: Basic</h3>
+				<table class="button-data">
+					<tbody>
+						<tr>
+							<th><label for="mbLink">Link HREF</label></th>
+							<td><input type="text" id="mbLink" name="link" value="" /></td>
+						</tr>
+						<tr>
+							<th><label for="mbLinkBaseUrl">Link HREF to Begin with Base URL</label></th>
+							<td>
+								<input type="checkbox" class="checkbox" id="mbLinkBaseUrl" name="link_base_url" value="" />
+								<span class="comment">(Base URL already has the '/' at the end)</span>
+							</td>
+						</tr>
+						<tr>
+							<th><label for="mbLinkCategory">Link to Category Page</label></th>
+							<td>
+								<select id="mbLinkCategory" name="link_category">
+									<option value="">-- Select a category --</option>
+									<?php foreach( $this->getLinkSubcategoryOptions() as $value => $label ){ ?>
+										<option value="<?php echo $value; ?>"><?php echo substr( $label, 4 ); ?></option>
+									<?php } ?>
+								</select>
+								<br /><span class="comment">(Setting will override "Link HREF" and "Link HREF to Begin ...")</span>
+							</td>
+						</tr>
+						<tr>
+							<th><label for="mbLinkCmspage">Link to CMS Page</label></th>
+							<td>
+								<select id="mbLinkCmspage" name="link_cmspage">
+									<option value="">-- Select a CMS page --</option>
+									<?php foreach( $this->getLinkCmsPageOptions() as $value => $label ){ ?>
+										<option value="<?php echo $value; ?>"><?php echo $label; ?></option>
+									<?php } ?>
+								</select>
+								<br /><span class="comment">(Setting will override "Link HREF" and "Link HREF to Begin ...")</span>
+							</td>
+						</tr>
+						<tr>
+							<th><label for="mbLinkTarget">Link Target</label></th>
+							<td>
+								<input type="text" id="mbLinkTarget" name="link_target" value="" />
+								<span class="comment">("_blank", "_self", "_parent", "_top", or something custom)</span>
+							</td>
+						</tr>
+						<tr style="display:none">
+							<th><label for="mbImage">Image</label></th>
+							<td><input type="text" id="mbImage" name="image" value="" /></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="tabcontent tabcontent-customhtml">
+				<h3>Item Type: Custom HTML</h3>
+				<table class="button-data">
+					<tbody>
+						<tr>
+							<th><label for="mbCustomHtml">Custom HTML</label></th>
+							<td>
+								<textarea type="text" id="mbCustomHtml" name="custom_html" value=""></textarea>
+								<br /><span class="comment">(You need to build the &lt;a&gt; tag)</span>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="tabcontent tabcontent-subcategories">
+				<h3>Item Type: Subcategories</h3>
+				<table class="button-data">
+					<tbody>
+						<tr>
+							<th><label for="mbSubcategories">Subcategories of</label></th>
+							<td>
+								<select id="mbSubcategories" name="subcategories">
+									<option value="">-- Select a category --</option>
+										<?php foreach( $this->getSubcategoryOptions() as $value => $label ){ ?>
+											<option value="<?php echo $value; ?>"><?php echo $label; ?></option>
+									<?php } ?>
+								</select>
+							</td>
+						</tr>
+						<!--<tr>
+							<th><label for="mbCategories">Break every x subcategories</label></th>
+							<td>
+								<input type="text" id="mbSubcategoryBreak" name="subcategory_break" />
+								<br /><span class="comment">(Leave empty for no break)</span>
+							</td>
+						</tr>-->
+					</tbody>
+				</table>
+			</div>
+			<div class="tabcontent tabcontent-staticblock">
+				<h3>Item Type: Static Block</h3>
+				<table class="button-data">
+					<tbody>
+						<tr>
+							<th><label for="mbStaticblock">Static Block</label></th>
+							<td>
+								<select id="mbStaticblock" name="staticblock">
+									<option value="">-- Select a static block --</option>
+										<?php foreach( $this->getStaticblockOptions() as $value => $label ){ ?>
+											<option value="<?php echo $value; ?>"><?php echo $label; ?></option>
+									<?php } ?>
+								</select>
+							</td>
+						</tr>
+						<!--<tr>
+							<th><label for="mbCategories">Break every x subcategories</label></th>
+							<td>
+								<input type="text" id="mbSubcategoryBreak" name="subcategory_break" />
+								<br /><span class="comment">(Leave empty for no break)</span>
+							</td>
+						</tr>-->
+					</tbody>
+				</table>
+			</div>
+
+			<div class="clear"></div>
+
+		</div>
+
+		<button title="Save Item" type="button" class="scalable save" onclick="javascript:saveItem();" style="float:right;"><span><span><span>Save Item</span></span></span></button>
+
+		<button title="Delete Item" type="button" class="scalable delete" onclick="javascript:deleteItem();" style="float:right;"><span><span><span>Delete Item</span></span></span></button>
+
+		<input type="submit" value="Submit" style="visibility:hidden;" />
+
+	</form>
+
+</div>

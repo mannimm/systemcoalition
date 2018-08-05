@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<layout version="0.1.0">
+	<customer_account>
+		<reference name="customer_account_navigation">
+			<action method="addLink" translate="label" module="customer">
+				<name>saved_cards</name>
+				<path>customer/savedcards</path>
+				<label>Saved Cards</label>
+			</action>
+		</reference>
+		<reference name="head">
+			<action method="addCss"><stylesheet>nvncbl_square/css/savedcards.css</stylesheet></action>
+			<action method="addItem"><type>skin_js</type><name>nvncbl_square/js/savedcards.js</name></action>
+		</reference>
+	</customer_account>
+	<default>
+		<reference name="head">
+			<block type="core/text" name="nvncbl_square">
+				<!--<action method="setText" ifconfig="payment/nvncbl_square/square_js">
+					<text><![CDATA[<script src="https://js.square.com/v2/"></script>]]></text>
+				</action>-->
+			</block>
+			<action method="addItem" ifconfig="payment/nvncbl_square/square_js"><type>skin_js</type><name>nvncbl_square/js/square.js</name></action>
+			<action method="addItem" ifconfig="payment/nvncbl_square/card_autodetect"><type>skin_js</type><name>nvncbl_square/js/cctype.js</name></action>
+			<action method="addCss" ifconfig="payment/nvncbl_square/card_autodetect"><stylesheet>nvncbl_square/css/cctype.css</stylesheet></action>
+		</reference>
+	</default>
+</layout>
