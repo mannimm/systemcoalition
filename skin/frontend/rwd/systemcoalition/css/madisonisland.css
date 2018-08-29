@@ -186,7 +186,7 @@ body .promos > li {
   /*display: none;*/
 }
 
-.cms-index-index h2.subtitle {
+h2.subtitle {
 	/*padding: 6px 0;*/
     text-align: center;
     font-weight: 600;

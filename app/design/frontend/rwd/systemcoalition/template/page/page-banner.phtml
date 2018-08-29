@@ -1,0 +1,9 @@
+<div class="page-banner" style="position:relative; width:100%;">
+    <div class="banner-content">
+        <div class="narrow-container">
+            <div class="banner-title"><?php echo $this->getBannerTitle(); ?></div>
+            <div class="banner-subtitle"><?php echo $this->getBannerSubtitle(); ?></div>
+        </div>
+    </div>
+    <img src="<?php echo $this->getSkinUrl('images/'. $this->getBannerImage() ); ?>" />
+</div>
