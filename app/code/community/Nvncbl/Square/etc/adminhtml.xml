@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<adminhtml>
+	<menu>
+		<nvncbl_square module="nvncbl_square" translate="title">
+			<title>Square</title>
+			<sort_order>89</sort_order>
+			<children>
+				<payment_config>
+					<title>Payment Configuration</title>
+					<sort_order>100</sort_order>
+					<action>adminhtml/system_config/edit/section/payment</action>
+				</payment_config>
+				<catalog>
+					<title>Synchronization Configuration</title>
+					<sort_order>100</sort_order>
+					<action>adminhtml/square/catalog</action>
+				</catalog>
+			</children>
+		</nvncbl_square>
+	</menu>
+	<acl>
+		<resources>
+			<admin>
+				<children>
+					<system>
+						<children>
+							<config>
+								<children>
+									<nvncbl_square translate="title" module="nvncbl_square">
+										<title>Magento Square Integration</title>
+										<sort_order>800</sort_order>
+									</nvncbl_square>
+								</children>
+							</config>
+						</children>
+					</system>
+					<nvncbl_square translate="title" module="nvncbl_square">
+						<title>Square</title>
+						<sort_order>800</sort_order>
+						<children>
+							<payment_config translate="title">
+								<title>Payment Configuration</title>
+								<sort_order>800</sort_order>
+							</payment_config>
+							<catalog>
+								<title>Catalog Sync (not actually working yet)</title>
+								<sort_order>801</sort_order>
+							</catalog>
+						</children>
+					</nvncbl_square>
+				</children>
+			</admin>
+		</resources>
+	</acl>
+</adminhtml>

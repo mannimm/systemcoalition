@@ -1,9 +1,11 @@
 <?php
 
-//require_once 'Nvncbl/Square/lib/Square.php';
 require_once 'Nvncbl/Square/autoload.php';
 
+//require_once Mage::getBaseDir() .'/lib/Nvncbl/Square/autoload.php';
+
 class Nvncbl_Square_Model_Standard extends Mage_Payment_Model_Method_Abstract {
+
 	protected $_code = 'nvncbl_square';
 
 	protected $_isInitializeNeeded      = false;
@@ -14,331 +16,385 @@ class Nvncbl_Square_Model_Standard extends Mage_Payment_Model_Method_Abstract {
 	protected $_canCapturePartial       = true;
 	protected $_canRefund               = true;
 	protected $_canRefundInvoicePartial = true;
-	protected $_canVoid                 = true;
-	protected $_canCancelInvoice        = true;
+	protected $_canVoid                 = false;
+	protected $_canCancelInvoice        = false;
 	protected $_canUseInternal          = true;
 	protected $_canUseCheckout          = true;
 	protected $_canSaveCc               = false;
 	protected $_formBlockType           = 'nvncbl_square/form_standard';
 
-	// Docs: http://docs.magentocommerce.com/Mage_Payment/Mage_Payment_Model_Method_Abstract.html
-	// mixed $_canCreateBillingAgreement
-	// mixed $_canFetchTransactionInfo
-	// mixed $_canManageRecurringProfiles
-	// mixed $_canOrder
-	// mixed $_canReviewPayment
-	// array $_debugReplacePrivateDataKeys
-	// mixed $_infoBlockType
-
-	/**
-	 * Square Modes
-	 */
 	const TEST = 'test';
 	const LIVE = 'live';
 
-	public function __construct()
-	{
-		$this->store = $store = $this->getStore();
-		$mode = $store->getConfig('payment/nvncbl_square/square_mode');
-		$path = "payment/nvncbl_square/square_{$mode}_sk";
-		$apiKey = $store->getConfig($path);
-	}
+	const ACTION_TOKENIZE = 'tokenize';
 
-	protected function getStore()
-	{
-		// Admins may be viewing an order placed on a specific store
-		if (Mage::app()->getStore()->isAdmin())
-		{
-			try
-			{
-				if (Mage::app()->getRequest()->getParam('order_id'))
-				{
-					$orderId = Mage::app()->getRequest()->getParam('order_id');
-					$order = Mage::getModel('sales/order')->load($orderId);
-					$store = $order->getStore();
-				}
-				elseif (Mage::app()->getRequest()->getParam('invoice_id'))
-				{
-					$invoiceId = Mage::app()->getRequest()->getParam('invoice_id');
-					$invoice = Mage::getModel('sales/order_invoice')->load($invoiceId);
-					$store = $invoice->getStore();
-				}
-				elseif (Mage::app()->getRequest()->getParam('creditmemo_id'))
-				{
-					$creditmemoId = Mage::app()->getRequest()->getParam('creditmemo_id');
-					$creditmemo = Mage::getModel('sales/order_creditmemo')->load($creditmemoId);
-					$store = $creditmemo->getStore();
-				}
-				else
-				{
-					// We are creating a new order
-					$store = $this->getSessionQuote()->getStore();
-				}
+	public function assignData( $data ){
 
-				if (!empty($store) && $store->getId())
-					return $store;
-			}
-			catch (Exception $e) {}
-		}
-
-		// Users get the store they are on
-		return Mage::app()->getStore();
-	}
-
-	protected function getCustomerEmail()
-	{
-		if ($this->customerEmail)
-			return $this->customerEmail;
-
-		$quote = $this->getSessionQuote();
-
-		if ($quote)
-			$email = trim(strtolower($quote->getCustomerEmail()));
-
-		// This happens with guest checkouts
-		if (empty($email))
-			$email = trim(strtolower($quote->getBillingAddress()->getEmail()));
-
-		return $this->customerEmail = $email;
-	}
-
-	protected function getCustomerId()
-	{
-		// If we are in the back office
-		if (Mage::app()->getStore()->isAdmin())
-		{
-			return Mage::getSingleton('adminhtml/sales_order_create')->getQuote()->getCustomerId();
-		}
-		// If we are on the checkout page
-		else if (Mage::getSingleton('customer/session')->isLoggedIn())
-		{
-			return Mage::getSingleton('customer/session')->getCustomer()->getId();
-		}
-
-		return null;
-	}
-
-	protected function getSessionQuote()
-	{
-		// If we are in the back office
-		if (Mage::app()->getStore()->isAdmin())
-		{
-			return Mage::getSingleton('adminhtml/sales_order_create')->getQuote();
-		}
-		// If we are a user
-		return Mage::getSingleton('checkout/session')->getQuote();
-	}
-
-	public function assignData($data)
-	{
 		$nonce = $data['nonce'];
 		$info = $this->getInfoInstance();
 		$info->setAdditionalInformation( 'nonce', $nonce );
 
+		$save_cc_yesno = $data['save-cc-yesno'];
+		$info = $this->getInfoInstance();
+		$info->setAdditionalInformation( 'save-cc-yesno', $save_cc_yesno );
+
+		$saved_cc_id = $data['saved_cc_id'];
+		$info = $this->getInfoInstance();
+		$info->setAdditionalInformation( 'saved_cc_id', $saved_cc_id );
+
 		return $this;
+
 	}
 
-	public function authorize(Varien_Object $payment, $amount)
-	{
-		parent::authorize($payment, $amount);
+	public function getConfigPaymentAction(){
+		$payment_action = parent::getConfigPaymentAction();
 
-		if ($amount > 0){
-			$this->createCharge($payment, $amount, false);
+		if( $payment_action == Nvncbl_Square_Model_Standard::ACTION_TOKENIZE ){
+			return 'authorize';
+		}
+
+		return $payment_action;
+	}
+
+	public function authorize( Varien_Object $payment, $amount ){
+
+		parent::authorize( $payment, $amount );
+
+		try {
+			if( $amount > 0 ){
+				$this->charge( $payment, $amount, false );
+			}
+		} catch( Exception $e ){
+			Mage::log( $e->getMessage() );
+			//Mage::throwException( $e->getMessage() );
+
+			//$message = '[HTTP/1.1 402 Payment Required] {"errors":[{"category":"PAYMENT_METHOD_ERROR","code":"CARD_DECLINED","detail":"Card declined."}]}';
+			$message = $e->getMessage();
+			$message = substr( $message, strpos( $message, ']' ) + 1 );
+
+			$message = json_decode( $message );
+			foreach( $message->errors as $error ){
+				Mage::throwException( $error->detail );
+			}
+			Mage::throwException( $e->getMessage() );
 		}
 
 		return $this;
 	}
 
-	public function capture(Varien_Object $payment, $amount)
-	{
+	public function capture( Varien_Object $payment, $amount ){
+
 		parent::capture($payment, $amount);
 
-		if ($amount > 0){
-			$this->createCharge($payment, $amount, true);
+		try {
+			if( $amount > 0 ){
+
+				$last_trans_id = $payment->getLastTransId();
+				if(
+					empty( $last_trans_id )
+					|| ( parent::getConfigPaymentAction() == 'tokenize' )
+				){ // Brand new auth_capture
+					$this->charge($payment, $amount, true);
+				} else {
+					$location_id = Mage::helper('nvncbl_square')->getLocationId( $payment->getOrder()->getStoreId() );
+					$access_token = Mage::helper('nvncbl_square')->getAccessToken();
+
+					SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($access_token);
+					$api = new \SquareConnect\Api\TransactionsApi();
+					$api->captureTransaction( $location_id, $last_trans_id );
+				}
+			}
+		} catch( Exception $e ){
+			Mage::log( $e->getMessage() );
+			//Mage::throwException( $e->getMessage() );
+
+			//$message = '[HTTP/1.1 402 Payment Required] {"errors":[{"category":"PAYMENT_METHOD_ERROR","code":"CARD_DECLINED","detail":"Card declined."}]}';
+			$message = $e->getMessage();
+			$message = substr( $message, strpos( $message, ']' ) + 1 );
+
+			$message = json_decode( $message );
+			foreach( $message->errors as $error ){
+				//Mage::throwException( $message );
+				Mage::throwException( $error->detail );
+			}
+			Mage::throwException( $e->getMessage() );
 		}
 
 		return $this;
 	}
 
-	public function createCharge(Varien_Object $payment, $amount, $capture )
-	{
-		$info = $this->getInfoInstance();
-		$nonce = $info->getAdditionalInformation('nonce');
-		$location_id = 'F6X33Y9A4ECSM';
-		$access_token = 'sq0atp-c1gfj5kRgwXPMmbTokHF4g';
+	public function charge( Varien_Object $payment, $amount, $capture ){
 
-		$stream = fopen( Mage::getBaseDir() .'/tmp/tmp.txt', 'a+' );
-		fwrite( $stream, "nonce is: ". $nonce ."\n" );
-		fclose( $stream );
+		$info = $this->getInfoInstance();
+		$original_payment_action = parent::getConfigPaymentAction();
+
+		$nonce = $info->getAdditionalInformation('nonce');
+		$save_cc_yesno = $info->getAdditionalInformation('save-cc-yesno');
+		$saved_cc_id = $info->getAdditionalInformation('saved_cc_id');
+
+		$order = $payment->getOrder();
+
+		$customer_card_id = false;
+		$access_token = Mage::helper('nvncbl_square')->getAccessToken();
+		$location_id = Mage::helper('nvncbl_square')->getLocationId( $payment->getOrder()->getStoreId() );
+		$customer = Mage::getModel('customer/customer')->load( $order->getCustomerId() );
+
+		$billing_address = $order->getBillingAddress();
 
 		try {
 
-			$order = $payment->getOrder();
-			$amount = $order->getGrandTotal();
+			if( !$customer->getSquareCustomerId() ){
 
-			$cents = 100;
+				// Create square customer and save its ID
+				SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($access_token);
+				$customer_api = new \SquareConnect\Api\CustomersApi();
 
-			require Mage::getBaseDir().'/lib/Nvncbl/Square/autoload.php';
-			$transaction_api = new \SquareConnect\Api\TransactionApi();
+				$create_customer_body = array(
+				  'given_name' => $billing_address->getFirstname(),
+				  'family_name' => $billing_address->getLastname(),
+				  'email_address' => $billing_address->getEmail(),
+				  'address' => array(
+					'address_line_1' => $billing_address->getStreet1(),
+					'address_line_2' => $billing_address->getStreet2(),
+					'locality' => $billing_address->getCity(),
+					'administrative_district_level_1' => Mage::getModel('directory/region')->load( $billing_address->getRegionId() )->getCode(),
+					'postal_code' => $billing_address->getPostcode(),
+					'country' => $billing_address->getCountryId()
+				  ),
+				  'phone_number' => $billing_address->getTelephone(),
+				  'reference_id' => '',
+				  'note' => ''
+				);
 
-			$request_body = array (
-				"card_nonce" => $nonce,
+				//Mage::log( "create customer body: ". print_r( $create_customer_body, 1 ) );
 
-				# Monetary amounts are specified in the smallest unit of the applicable currency.
-				# This amount is in cents. It's also hard-coded for $1, which is not very useful.
-				"amount_money" => array (
-				"amount" => round($amount * $cents),
-				"currency" => 'USD'
-				//,"description" => "Order #".$order->getRealOrderId().' by '.$order->getCustomerName(),
-				),
+				$create_customer_result = $customer_api->createCustomer( $create_customer_body );
 
-				# Every payment you process for a given business have a unique idempotency key.
-				# If you're unsure whether a particular payment succeeded, you can reattempt
-				# it with the same idempotency key without worrying about double charging
-				# the buyer.
-				"idempotency_key" => uniqid()
-			);
+				$square_customer_id = $create_customer_result->getCustomer()->getId();
+				$info->setAdditionalInformation( 'square_customer_id', $square_customer_id );
+				$customer->setSquareCustomerId( $square_customer_id );
+				if( $customer->getId() ){
+					$customer->save();
+				}
 
-			# The SDK throws an exception if a Connect endpoint responds with anything besides 200 (success).
-			# This block catches any exceptions that occur from the request.
-			//try {
-				$charge_result = $transaction_api->charge($access_token, $location_id, $request_body);
-				print_r( $charge_result );
-				$stream = fopen( Mage::getBaseDir() .'/tmp/tmp.txt', 'a+' );
-				fwrite( $stream, 'Charge result: '. print_r( $charge_result, 1 ) ."\n" );
-				fclose( $stream );
-			//} catch (Exception $e) {
-				$stream = fopen( Mage::getBaseDir() .'/tmp/tmp.txt', 'a+' );
-				fwrite( $stream, "Caught exception " . $e->getMessage() ."\n" );
-				fclose( $stream );
-			//	echo "Caught exception " . $e->getMessage();
-			//}
-
-
-			$payment->setTransactionId( $charge_result['reference_id'] );
-			$payment->setAdditionalInformation( 'captured', $capture );
-			$payment->setIsTransactionClosed(0);
-
-			// Set the order status according to the configuration
-			$newOrderStatus = Mage::getStoreConfig('payment/nvncbl_square/order_status');
-			if (!empty($newOrderStatus))
-			{
-				$order->addStatusToHistory($newOrderStatus, 'Changing order status as per New Order Status configuration');
 			}
 
-			// $payment->setIsFraudDetected(true);
-			// $payment->setIsTransactionPending(!$capture);
-
-
-		}
-		catch(Exception $e)
-		{
+		} catch( Exception $e ){
 			Mage::log( $e->getMessage() );
-			$stream = fopen( Mage::getBaseDir() .'/tmp/tmp.txt', 'a+' );
-			fwrite( $stream, "Caught exception " . $e->getMessage() ."\n" );
-			fclose( $stream );
-			Mage::throwException($e->getMessage());
-		}
-	}
-
-	protected function getSavedCardFrom(Varien_Object $payment)
-	{
-		$card = $payment->getAdditionalInformation('token');
-
-		if (strstr($card, 'card_') === false)
-		{
-			// $cards will be NULL if the customer has no cards
-			$cards = $this->getCustomerCards(true, $payment->getOrder()->getCustomerId());
-			if (is_array($cards) && !empty($cards[0]))
-				return $cards[0]->id;
 		}
 
-		if (strstr($card, 'card_') === false)
-			return null;
+		/* Check to see if submitting a new saved CC */
+		/* Also check to see if action is to tokenize, in which case we need to save the token */
+		/* Want to create customer and card ID before transaction */
+		if(
+			( $save_cc_yesno )
+			|| ( $original_payment_action == 'tokenize' )
+		){
 
-		return $card;
+			try {
+
+				// Save card
+				SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($access_token);
+				$customer_api = new \SquareConnect\Api\CustomersApi();
+				$create_customer_card_body = array(
+				  'card_nonce' => $nonce,
+				  'billing_address' => array(
+					'address_line_1' => $billing_address->getStreet1(),
+					'address_line_2' => $billing_address->getStreet2(),
+					'locality' => $billing_address->getCity(),
+					'administrative_district_level_1' => Mage::getModel('directory/region')->load( $billing_address->getRegionId() )->getCode(),
+					'postal_code' => $billing_address->getPostcode(),
+					'country' => $billing_address->getCountryId()
+				  ),
+				  'cardholder_name' => $billing_address->getFirstname() .' '. $billing_address->getLastname()
+				);
+
+				//Mage::log( '$create_customer_card_customer_id: '. $customer->getSquareCustomerId() );
+				//Mage::log( '$create_customer_card_body: '. print_r( $create_customer_card_body, 1 ) );
+
+				$create_customer_card_result = $customer_api->createCustomerCard( $customer->getSquareCustomerId(), $create_customer_card_body );
+
+				if( $create_customer_card_result->getCard() ){
+					//Mage::log( "card: ". $create_customer_card_result->getCard()->getId() );
+					$customer_card_id = $create_customer_card_result->getCard()->getId();
+					if( $original_payment_action == 'tokenize' ){
+						$info->setAdditionalInformation( 'saved_cc_id', $customer_card_id );
+					}
+				}
+
+				if( $create_customer_card_result->getErrors() ){
+					foreach( $create_customer_card_result->getErrors() as $error ){
+						Mage::log( "error: ". $error->getCode() );
+					}
+				}
+
+			} catch( Exception $e ){
+				Mage::log( $e->getMessage() );
+			}
+
+		}
+
+		$billing_address = $order->getBillingAddress();
+
+		/* Now the transaction */
+		if(
+			$original_payment_action != 'tokenize'
+			|| ( $original_payment_action == 'tokenize' && ( $capture ) )
+		){
+
+			//require_once( Mage::getBaseDir().'/lib/Nvncbl/Square/autoload.php' );
+			SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($access_token);
+			$transaction_api = new \SquareConnect\Api\TransactionsApi();
+
+			$supported_currencies = Mage::helper('nvncbl_square')->getSupportedCurrencies();
+			$transaction_currency = $order->getOrderCurrencyCode();
+			//$transaction_amount = round( $order->getGrandTotal() * $supported_currencies[ $transaction_currency ]['num_base_units'] );
+			$transaction_amount = round( $amount * $supported_currencies[ $transaction_currency ]['num_base_units'] );
+
+			if( $order->getOrderCurrencyCode() != Mage::getStoreConfig('payment/nvncbl_square/currency') ){
+
+				$transaction_currency = Mage::getStoreConfig('payment/nvncbl_square/currency');
+
+				//$transaction_amount = round( Mage::helper('directory')->currencyConvert( $order->getGrandTotal(), $transaction_currency, Mage::getStoreConfig('payment/nvncbl_square/currency') ) * $supported_currencies[ $transaction_currency ]['num_base_units'] );
+				$transaction_amount = round( Mage::helper('directory')->currencyConvert( $amount, $transaction_currency, Mage::getStoreConfig('payment/nvncbl_square/currency') ) * $supported_currencies[ $transaction_currency ]['num_base_units'] );
+
+			}
+
+			$request_body = array(
+				'amount_money' => array(
+					'amount' => $transaction_amount,
+					'currency' => $transaction_currency
+				),
+				'idempotency_key' => uniqid(),
+				'buyer_email_address' => $order->getCustomerEmail(),
+				'billing_address' => array(
+					'address_line_1' => $billing_address->getStreet1(),
+					'address_line_2' => $billing_address->getStreet2(),
+					'locality' => $billing_address->getCity(),
+					'administrative_district_level_1' => $billing_address->getRegion(),
+					'postal_code' => $billing_address->getPostcode(),
+					'country' => $billing_address->getCountryId(),
+				)
+			);
+
+			if( $saved_cc_id ){
+				$request_body['customer_id'] = $customer->getSquareCustomerId();
+				$request_body['customer_card_id'] = $saved_cc_id;
+			} else if( !$customer_card_id ){
+				$request_body['customer_id'] = $customer->getSquareCustomerId();
+				$request_body['card_nonce'] = $nonce;
+			} else {
+				$request_body['customer_id'] = $customer->getSquareCustomerId();
+				$request_body['customer_card_id'] = $customer_card_id;
+			}
+
+			if( ( $shipping_address = $order->getShippingAddress() ) !== false ){
+				$request_body['shipping_address'] = array(
+					'address_line_1' => $shipping_address->getStreet1(),
+					'address_line_2' => $shipping_address->getStreet2(),
+					'locality' => $shipping_address->getCity(),
+					'administrative_district_level_1' => $shipping_address->getRegion(),
+					'postal_code' => $shipping_address->getPostcode(),
+					'country' => $shipping_address->getCountryId(),
+				);
+			}
+
+			if( !$capture ){
+				$request_body['delay_capture'] = true;
+			}
+
+			//$request_body['reference_id'] = Mage::getSingleton('checkout/session')->getQuote()->reserveOrderId()->save()->getReservedOrderId();
+			$request_body['note'] = $order->getIncrementId();
+			$request_body['reference_id'] = $order->getIncrementId();
+
+			Mage::log( "request body: ". print_r( $request_body, 1 ) );
+
+			# The SDK throws an exception if a Connect endpoint responds with anything besides 200 (success).
+			$charge_result = $transaction_api->charge( $location_id, $request_body);
+
+			/* Process the result of the charge */
+			/* Save tender ID for later capture or potential refund */
+			foreach( $charge_result->getTransaction()->getTenders() as $tender ){
+				$payment->setCcType( $tender->getCardDetails()->getCard()->getCardBrand() );
+				$payment->setCcLast4( $tender->getCardDetails()->getCard()->getLast4() );
+				$info->setAdditionalInformation( 'tender_id', $tender->getId() );
+			}
+
+			$payment->setLastTransId( $charge_result->getTransaction()->getId() );
+
+		}
+
+		$newOrderStatus = Mage::getStoreConfig('payment/nvncbl_square/order_status');
+		if (!empty($newOrderStatus)){
+			$order->addStatusToHistory($newOrderStatus, 'New Order Status');
+		}
+
 	}
 
-	/**
-	 * Cancel payment
-	 *
-	 * @param   Varien_Object $invoicePayment
-	 * @return  Mage_Payment_Model_Abstract
-	 */
-	public function cancel(Varien_Object $payment, $amount = null)
-	{
+	public function cancel( Varien_Object $payment, $amount = null ){
+
+		$info = $this->getInfoInstance();
+
+		$tender_id = $info->getAdditionalInformation('tender_id');
+		$location_id = Mage::helper('nvncbl_square')->getLocationId( $payment->getOrder()->getStoreId() );
+		$access_token = Mage::helper('nvncbl_square')->getAccessToken();
+
 		// Captured
 		$creditmemo = $payment->getCreditmemo();
-		if (!empty($creditmemo))
-		{
+		if (!empty($creditmemo)){
 			$rate = $creditmemo->getStoreToOrderRate();
-			if (!empty($rate) && is_numeric($rate))
+			if (!empty($rate) && is_numeric($rate)){
 				$amount *= $rate;
+			}
 		}
 		// Authorized
 		$amount = (empty($amount)) ? $payment->getOrder()->getTotalDue() : $amount;
 
+		$supported_currencies = Mage::helper('nvncbl_square')->getSupportedCurrencies();
 		$currency = $payment->getOrder()->getOrderCurrencyCode();
 
-		$transactionId = $payment->getParentTransactionId();
+		$transactionId = $payment->getLastTransId();
 		$transactionId = preg_replace('/-.*$/', '', $transactionId);
 
 		try {
-			$cents = 100;
-			if ($this->isZeroDecimal($currency))
-				$cents = 1;
 
-			$params = array(
-				'amount' => round($amount * $cents)
-			);
-			$charge = Square_Charge::retrieve($transactionId);
+			$transaction_amount = $amount * $supported_currencies[ $currency ]['num_base_units'];
 
-			// This is true when an authorization has expired or when there was a refund through the Square account
-			if (!$charge->refunded)
-			{
-				$charge->refund($params);
+			SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($access_token);
+			$api = new \SquareConnect\Api\TransactionsApi();
 
-				$payment->getOrder()->addStatusToHistory(
-					Mage_Sales_Model_Order::STATE_CANCELED,
-					'Customer was refunded the amount of '. $amount
-				);
+			$idempotencyKey = uniqid();
+
+			$refundResult = $api->createRefund( $location_id, $transactionId, array(
+				'tender_id' => $tender_id,
+				'amount_money' => array(
+					'amount' => $transaction_amount,
+					'currency' => 'USD'
+				),
+				'idempotency_key' => $idempotencyKey,
+				'reason' => 'Cancelled order'
+			));
+
+			if( in_array( $refundResult->getRefund()->getStatus(), array( 'PENDING', 'APPROVED' ) ) ){
+				$payment->getOrder()->addStatusToHistory( Mage_Sales_Model_Order::STATE_CANCELED, 'Customer was refunded the amount of '. number_format( $transaction_amount / $supported_currencies[ $currency ]['num_base_units'], 2 ) );
 			}
-			else
-			{
-				Mage::throwException('This order has already been refunded in Square. To refund from Magento, please refund it offline.');
-			}
-		}
-		catch (Exception $e)
-		{
-			Mage::log('Could not refund payment: '.$e->getMessage());
-			Mage::throwException( 'Could not refund payment: '. $e->getMessage() );
+
+		} catch( Exception $e ){
+			Mage::log( 'Could not refund payment: '. $e->getMessage() );
+			Mage::throwException( 'Could not refund payment: ' . $e->getMessage() );
 		}
 
 		return $this;
 	}
 
-	/**
-	 * Refund money
-	 *
-	 * @param   Varien_Object $invoicePayment
-	 * @return  Mage_Payment_Model_Abstract
-	 */
-	public function refund(Varien_Object $payment, $amount)
-	{
+	public function refund(Varien_Object $payment, $amount){
 		parent::refund($payment, $amount);
 		$this->cancel($payment, $amount);
 
 		return $this;
 	}
 
-	/**
-	 * Void payment
-	 *
-	 * @param   Varien_Object $invoicePayment
-	 * @return  Mage_Payment_Model_Abstract
-	 */
-	public function void(Varien_Object $payment)
-	{
+	public function void(Varien_Object $payment){
 		parent::void($payment);
 		$this->cancel($payment);
 
@@ -346,5 +402,3 @@ class Nvncbl_Square_Model_Standard extends Mage_Payment_Model_Method_Abstract {
 	}
 
 }
-
-?>

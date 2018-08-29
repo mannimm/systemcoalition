@@ -1,230 +1,152 @@
 <?xml version="1.0"?>
 <config>
-  <sections>
-	<payment>
-	  <groups>
-		<nvncbl_square translate="label comment" module="nvncbl_square">
-		  <label>Square Payment Gateway</label>
-		  <comment>&lt;strong&gt;Please note&lt;/strong&gt;: If you do not yet have a Square account, please &lt;a href="https://manage.square.com/register" target="_blank"&gt;click here&lt;/a&gt; to register.</comment>
-		  <sort_order>13</sort_order>
-		  <show_in_default>1</show_in_default>
-		  <show_in_website>1</show_in_website>
-		  <show_in_store>1</show_in_store>
-		  <fields>
-			<active translate="label">
-			  <label>Enabled</label>
-			  <frontend_type>select</frontend_type>
-			  <source_model>adminhtml/system_config_source_yesno</source_model>
-			  <sort_order>1</sort_order>
-			  <show_in_default>1</show_in_default>
-			  <show_in_website>1</show_in_website>
-			  <show_in_store>1</show_in_store>
-			</active>
-			<title translate="label">
-			  <label>Title</label>
-			  <comment><![CDATA[This appears at the checkout page during payment]]></comment>
-			  <frontend_type>text</frontend_type>
-			  <sort_order>2</sort_order>
-			  <show_in_default>1</show_in_default>
-			  <show_in_website>1</show_in_website>
-			  <show_in_store>1</show_in_store>
-			</title>
-			<square_mode translate="label">
-			  <label>Mode</label>
-			  <comment><![CDATA[Set this to live when you are ready to accept payments]]></comment>
-			  <frontend_type>select</frontend_type>
-			  <source_model>nvncbl_square/source_mode</source_model>
-			  <sort_order>5</sort_order>
-			  <show_in_default>1</show_in_default>
-			  <show_in_website>1</show_in_website>
-			  <show_in_store>1</show_in_store>
-			</square_mode>
-			<square_test_sk translate="label">
-			  <label>Test Secret Key</label>
-			  <comment>
-				<![CDATA[<a target="_blank" href="https://manage.square.com/account">square.com/account</a> &gt; API Keys &gt; Test Secret Key]]>
-			  </comment>
-			  <frontend_type>text</frontend_type>
-			  <sort_order>11</sort_order>
-			  <show_in_default>1</show_in_default>
-			  <show_in_website>1</show_in_website>
-			  <show_in_store>1</show_in_store>
-			  <depends>
-				<square_mode>test</square_mode>
-			  </depends>
-			</square_test_sk>
-			<square_test_pk translate="label">
-			  <label>Test Publishable Key</label>
-			  <comment>
-				<![CDATA[<a target="_blank" href="https://manage.square.com/account">square.com/account</a> &gt; API Keys &gt; Test Publishable Key]]>
-			  </comment>
-			  <frontend_type>text</frontend_type>
-			  <sort_order>12</sort_order>
-			  <show_in_default>1</show_in_default>
-			  <show_in_website>1</show_in_website>
-			  <show_in_store>1</show_in_store>
-			  <depends>
-				<square_mode>test</square_mode>
-			  </depends>
-			</square_test_pk>
-			<square_live_sk translate="label">
-			  <label>Live Secret Key</label>
-			  <comment>
-				<![CDATA[<a target="_blank" href="https://manage.square.com/account">square.com/account</a> &gt; API Keys &gt; Live Secret Key]]>
-			  </comment>
-			  <frontend_type>text</frontend_type>
-			  <sort_order>13</sort_order>
-			  <show_in_default>1</show_in_default>
-			  <show_in_website>1</show_in_website>
-			  <show_in_store>1</show_in_store>
-			  <depends>
-				<square_mode>live</square_mode>
-			  </depends>
-			</square_live_sk>
-			<square_live_pk translate="label">
-			  <label>Live Publishable Key</label>
-			  <comment>
-				<![CDATA[<a target="_blank" href="https://manage.square.com/account">square.com/account</a> &gt; API Keys &gt; Live Publishable Key]]>
-			  </comment>
-			  <frontend_type>text</frontend_type>
-			  <sort_order>14</sort_order>
-			  <show_in_default>1</show_in_default>
-			  <show_in_website>1</show_in_website>
-			  <show_in_store>1</show_in_store>
-			  <depends>
-				<square_mode>live</square_mode>
-			  </depends>
-			</square_live_pk>
-			<square_js translate="label">
-			  <label>Square.js</label>
-			  <comment>
-				<![CDATA[Enable Square.js for PCI compliance, or disable it for compatibility with custom checkout page modules.]]>
-			  </comment>
-			  <frontend_type>select</frontend_type>
-			  <source_model>nvncbl_square/source_squareJs</source_model>
-			  <sort_order>20</sort_order>
-			  <show_in_default>1</show_in_default>
-			  <show_in_website>1</show_in_website>
-			  <show_in_store>1</show_in_store>
-			</square_js>
-			<payment_action translate="label">
-			  <label>Payment Action</label>
-			  <frontend_type>select</frontend_type>
-			  <source_model>nvncbl_square/source_paymentAction</source_model>
-			  <sort_order>35</sort_order>
-			  <show_in_default>1</show_in_default>
-			  <show_in_website>1</show_in_website>
-			  <show_in_store>1</show_in_store>
-			</payment_action>
-			<expired_authorizations translate="label">
-			  <label>Expired Authorizations</label>
-			  <comment>
-				<![CDATA[Authorizations will typically expire after 7 days. What should we do if an admin tries to capture an expired authorization?]]>
-			  </comment>
-			  <frontend_type>select</frontend_type>
-			  <source_model>nvncbl_square/source_expiredAuthorizations</source_model>
-			  <sort_order>36</sort_order>
-			  <show_in_default>1</show_in_default>
-			  <show_in_website>1</show_in_website>
-			  <show_in_store>1</show_in_store>
-			  <depends>
-				<payment_action>authorize</payment_action>
-			  </depends>
-			</expired_authorizations>
-			<avs translate="label">
-			  <label>Address Verification Check (AVS)</label>
-			  <frontend_type>select</frontend_type>
-			  <source_model>nvncbl_square/source_avs</source_model>
-			  <sort_order>37</sort_order>
-			  <show_in_default>1</show_in_default>
-			  <show_in_website>1</show_in_website>
-			  <show_in_store>1</show_in_store>
-			</avs>
-			<ccsave translate="label">
-			  <label>Save Customer Cards</label>
-			  <comment>
-				<![CDATA[Enable this if you want to save customer cards on Square's servers so that they don't have to enter the details of the same card twice]]>
-			  </comment>
-			  <frontend_type>select</frontend_type>
-			  <source_model>nvncbl_square/source_ccSave</source_model>
-			  <sort_order>38</sort_order>
-			  <show_in_default>1</show_in_default>
-			  <show_in_website>1</show_in_website>
-			  <show_in_store>1</show_in_store>
-			</ccsave>
-			<use_store_currency translate="label,comment">
-			  <label>Pay in store currency</label>
-			  <comment>Choose "Yes" to use store view currency instead of base currency.</comment>
-			  <frontend_type>select</frontend_type>
-			  <source_model>adminhtml/system_config_source_yesno</source_model>
-			  <sort_order>40</sort_order>
-			  <show_in_default>1</show_in_default>
-			  <show_in_website>1</show_in_website>
-			  <show_in_store>1</show_in_store>
-			</use_store_currency>
-			<order_status translate="label">
-			  <label>New Order Status</label>
-			  <frontend_type>select</frontend_type>
-			  <source_model>adminhtml/system_config_source_order_status</source_model>
-			  <sort_order>50</sort_order>
-			  <show_in_default>1</show_in_default>
-			  <show_in_website>1</show_in_website>
-			  <show_in_store>1</show_in_store>
-			</order_status>
-			<card_autodetect translate="label">
-			  <label>Show Accepted Card Icons</label>
-			  <frontend_type>select</frontend_type>
-			  <source_model>nvncbl_square/source_ccAutoDetect</source_model>
-			  <sort_order>55</sort_order>
-			  <show_in_default>1</show_in_default>
-			  <show_in_website>1</show_in_website>
-			  <show_in_store>1</show_in_store>
-			</card_autodetect>
-			<cctypes translate="label">
-			  <label>Accepted Card Types</label>
-			  <frontend_type>multiselect</frontend_type>
-			  <source_model>nvncbl_square/source_ccType</source_model>
-			  <sort_order>56</sort_order>
-			  <show_in_default>1</show_in_default>
-			  <show_in_website>1</show_in_website>
-			  <show_in_store>1</show_in_store>
-			  <can_be_empty>1</can_be_empty>
-			  <depends>
-				<card_autodetect>1</card_autodetect>
-			  </depends>
-			</cctypes>
-			<allowspecific translate="label">
-			  <label>Payment Applicable From</label>
-			  <frontend_type>select</frontend_type>
-			  <sort_order>60</sort_order>
-			  <source_model>adminhtml/system_config_source_payment_allspecificcountries</source_model>
-			  <show_in_default>1</show_in_default>
-			  <show_in_website>1</show_in_website>
-			  <show_in_store>1</show_in_store>
-			</allowspecific>
-			<specificcountry translate="label">
-			  <label>Countries Payment Applicable From</label>
-			  <frontend_type>multiselect</frontend_type>
-			  <sort_order>70</sort_order>
-			  <source_model>adminhtml/system_config_source_country</source_model>
-			  <show_in_default>1</show_in_default>
-			  <show_in_website>1</show_in_website>
-			  <show_in_store>1</show_in_store>
-			  <depends>
-				<allowspecific>1</allowspecific>
-			  </depends>
-			</specificcountry>
-			<sort_order translate="label">
-			  <label>Sort Order</label>
-			  <frontend_type>text</frontend_type>
-			  <sort_order>100</sort_order>
-			  <show_in_default>1</show_in_default>
-			  <show_in_website>1</show_in_website>
-			  <show_in_store>1</show_in_store>
-			</sort_order>
-		  </fields>
-		</nvncbl_square>
-	  </groups>
-	</payment>
-  </sections>
+	<sections>
+		<payment>
+			<groups>
+				<nvncbl_square translate="label comment" module="nvncbl_square">
+					<label>Square Payment Gateway</label>
+					<sort_order>13</sort_order>
+					<show_in_default>1</show_in_default>
+					<show_in_website>1</show_in_website>
+					<show_in_store>1</show_in_store>
+					<fields>
+						<active translate="label">
+							<label>Enabled</label>
+							<frontend_type>select</frontend_type>
+							<source_model>adminhtml/system_config_source_yesno</source_model>
+							<sort_order>1</sort_order>
+							<show_in_default>1</show_in_default>
+							<show_in_website>1</show_in_website>
+							<show_in_store>1</show_in_store>
+						</active>
+						<title translate="label">
+							<label>Title</label>
+							<frontend_type>text</frontend_type>
+							<sort_order>2</sort_order>
+							<show_in_default>1</show_in_default>
+							<show_in_website>1</show_in_website>
+							<show_in_store>1</show_in_store>
+						</title>
+						<square_mode translate="label">
+							<label>Mode</label>
+							<frontend_type>select</frontend_type>
+							<source_model>nvncbl_square/source_mode</source_model>
+							<sort_order>3</sort_order>
+							<show_in_default>1</show_in_default>
+							<show_in_website>1</show_in_website>
+							<show_in_store>1</show_in_store>
+						</square_mode>
+						<personal_access_token translate="label">
+							<label>Square OAuth Permissions</label>
+							<frontend_model>nvncbl_square/adminhtml_oauthurl</frontend_model>
+							<sort_order>12</sort_order>
+							<show_in_default>1</show_in_default>
+							<show_in_website>1</show_in_website>
+							<show_in_store>1</show_in_store>
+						</personal_access_token>
+						<location_id translate="label">
+							<label>LIVE Mode Location ID</label>
+							<frontend_type>select</frontend_type>
+							<source_model>nvncbl_square/source_locationId</source_model>
+							<sort_order>15</sort_order>
+							<show_in_default>1</show_in_default>
+							<show_in_website>1</show_in_website>
+							<show_in_store>1</show_in_store>
+						</location_id>
+						<testing_location_id translate="label">
+							<label>TEST Mode Location ID</label>
+							<frontend_type>select</frontend_type>
+							<source_model>nvncbl_square/source_testingLocationId</source_model>
+							<sort_order>16</sort_order>
+							<show_in_default>1</show_in_default>
+							<show_in_website>1</show_in_website>
+							<show_in_store>1</show_in_store>
+						</testing_location_id>
+						<currency translate="label">
+							<label>Square Account Currency</label>
+							<frontend_type>select</frontend_type>
+							<source_model>nvncbl_square/source_currency</source_model>
+							<sort_order>20</sort_order>
+							<show_in_default>1</show_in_default>
+							<show_in_website>1</show_in_website>
+							<show_in_store>1</show_in_store>
+						</currency>
+						<payment_action translate="label">
+							<label>Payment Action</label>
+							<frontend_type>select</frontend_type>
+							<source_model>nvncbl_square/source_paymentAction</source_model>
+							<sort_order>35</sort_order>
+							<show_in_default>1</show_in_default>
+							<show_in_website>1</show_in_website>
+							<show_in_store>1</show_in_store>
+						</payment_action>
+						<order_status translate="label">
+							<label>New Order Status</label>
+							<frontend_type>select</frontend_type>
+							<source_model>adminhtml/system_config_source_order_status</source_model>
+							<sort_order>50</sort_order>
+							<show_in_default>1</show_in_default>
+							<show_in_website>1</show_in_website>
+							<show_in_store>1</show_in_store>
+						</order_status>
+						<allowspecific translate="label">
+							<label>Payment Applicable From</label>
+							<frontend_type>select</frontend_type>
+							<sort_order>60</sort_order>
+							<source_model>adminhtml/system_config_source_payment_allspecificcountries</source_model>
+							<show_in_default>1</show_in_default>
+							<show_in_website>1</show_in_website>
+							<show_in_store>1</show_in_store>
+						</allowspecific>
+						<specificcountry translate="label">
+							<label>Countries Payment Applicable From</label>
+							<frontend_type>multiselect</frontend_type>
+							<sort_order>70</sort_order>
+							<source_model>adminhtml/system_config_source_country</source_model>
+							<show_in_default>1</show_in_default>
+							<show_in_website>1</show_in_website>
+							<show_in_store>1</show_in_store>
+							<depends>
+								<allowspecific>1</allowspecific>
+							</depends>
+						</specificcountry>
+						<min_order_total translate="label">
+							<label>Minimum Order Total</label>
+							<frontend_type>text</frontend_type>
+							<sort_order>80</sort_order>
+							<show_in_default>1</show_in_default>
+							<show_in_website>1</show_in_website>
+							<show_in_store>0</show_in_store>
+						</min_order_total>
+						<enable_saved_cc translate="label">
+							<label>Enable Saved CC</label>
+							<frontend_type>select</frontend_type>
+							<source_model>adminhtml/system_config_source_yesno</source_model>
+							<sort_order>90</sort_order>
+							<show_in_default>1</show_in_default>
+							<show_in_website>1</show_in_website>
+							<show_in_store>1</show_in_store>
+						</enable_saved_cc>
+						<enable_apple_pay translate="label">
+							<label>Enable Apple Pay</label>
+							<frontend_type>select</frontend_type>
+							<source_model>adminhtml/system_config_source_yesno</source_model>
+							<sort_order>90</sort_order>
+							<show_in_default>1</show_in_default>
+							<show_in_website>1</show_in_website>
+							<show_in_store>1</show_in_store>
+						</enable_apple_pay>
+						<sort_order translate="label">
+							<label>Sort Order</label>
+							<frontend_type>text</frontend_type>
+							<sort_order>100</sort_order>
+							<show_in_default>1</show_in_default>
+							<show_in_website>1</show_in_website>
+							<show_in_store>1</show_in_store>
+						</sort_order>
+					</fields>
+				</nvncbl_square>
+			</groups>
+		</payment>
+	</sections>
 </config>
