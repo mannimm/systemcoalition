@@ -1,17 +1,8 @@
 <?xml version="1.0"?>
 <layout version="0.1.0">
-	<adminhtml_sales_order_create_index>
-		<reference name="head">
-			<action method="addItem" ifconfig="payment/nvncbl_square/square_js">
-				<type>external_js</type>
-				<name>https://js.square.com/v2/</name>
-				<params/>
-			</action>
-			<action method="addItem" ifconfig="payment/nvncbl_square/square_js"><type>skin_js</type><name>nvncbl_square/js/square.js</name></action>
-			<action method="addCss"><stylesheet>nvncbl_square/css/savedcards.css</stylesheet></action>
-			<action method="addItem"><type>skin_js</type><name>nvncbl_square/js/savedcards.js</name></action>
-			<action method="addItem" ifconfig="payment/nvncbl_square/card_autodetect"><type>skin_js</type><name>nvncbl_square/js/cctype.js</name></action>
-			<action method="addCss" ifconfig="payment/nvncbl_square/card_autodetect"><stylesheet>nvncbl_square/css/cctype.css</stylesheet></action>
+	<adminhtml_square_catalog>
+		<reference name="content">
+			<block type="nvncbl_square/adminhtml_catalog" name="catalog.grid.container" />
 		</reference>
-	</adminhtml_sales_order_create_index>
+	</adminhtml_square_catalog>
 </layout>

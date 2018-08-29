@@ -1,0 +1,90 @@
+<div class="content-header">
+	<table cellspacing="0">
+		<tr>
+			<td style="width:50%;"><h3 class="head"><?php echo Mage::helper('nvncbl_square')->__('Sync Settings'); ?></h3></td>
+			<td class="a-right">
+				<?php echo $this->getButtonsHtml() ?>
+			</td>
+		</tr>
+	</table>
+</div>
+<div class="catalog-sync-settings-container">
+<?php
+	$catalog_sync_settings = Mage::helper('nvncbl_square')->getCatalogSyncSettings();
+	$catalog_sync_settings = new Varien_Object( $catalog_sync_settings );
+?>
+	<form id="frm-catalog-sync-settings" action="<?php echo $this->getUrl('*/*/catalogSaveSettings', array('_current'=>true)); ?>" method="post">
+		<input name="form_key" type="hidden" value="<?php echo Mage::getSingleton('core/session')->getFormKey() ?>" />
+		<table>
+			<tr>
+				<td>
+					<select name="catalog_sync_settings[upsert_square]">
+						<option value="0"<?php echo $catalog_sync_settings->getUpsertSquare() === '0' ? ' selected="selected"' : ''; ?>>No</option>
+						<option value="1"<?php echo $catalog_sync_settings->getUpsertSquare() === '1' ? ' selected="selected"' : ''; ?>>Yes</option>
+					</select>
+				</td>
+				<td>Create/Update products (in Square) that exist in Magento but not in Square</td>
+			</tr>
+			<tr>
+				<td>
+					<select name="catalog_sync_settings[upsert_magento]">
+						<option value="0"<?php echo $catalog_sync_settings->getUpsertMagento() === '0' ? ' selected="selected"' : ''; ?>>No</option>
+						<option value="1"<?php echo $catalog_sync_settings->getUpsertMagento() === '1' ? ' selected="selected"' : ''; ?>>Yes</option>
+					</select>
+				</td>
+				<td>Create/Update products (in Magento) that exist in Square but not in Magento</td>
+			</tr>
+			<?php
+				$catalog_sync_attributes = Mage::helper('nvncbl_square')->getCatalogSyncAttributes();
+				foreach( $catalog_sync_attributes as $attribute_code => $attribute_label ){
+			?>
+				<tr>
+					<td>
+						<select name="catalog_sync_settings[attribute_control_<?php echo $attribute_code; ?>]">
+							<option value="magento"<?php echo $catalog_sync_settings->getData( 'attribute_control_'. $attribute_code ) == 'magento' ? ' selected="selected"' : ''; ?>>Controlled by Magento</option>
+							<option value="square"<?php echo $catalog_sync_settings->getData( 'attribute_control_'. $attribute_code ) == 'square' ? ' selected="selected"' : ''; ?>>Controlled by Square</option>
+							<option value="separate"<?php echo $catalog_sync_settings->getData( 'attribute_control_'. $attribute_code ) == 'separate' ? ' selected="selected"' : ''; ?>>Controlled Separately</option>
+						</select>
+					</td>
+					<td><?php echo $attribute_label; ?></td>
+				</tr>
+			<?php } ?>
+			<tr>
+				<td>
+					<br />
+					<button title="Save Settings" type="button" class="scalable task" onclick="javascript:document.getElementById('frm-catalog-sync-settings').submit();" style=""><span><span><span>Save Settings</span></span></span></button>
+				</td>
+				<td>&nbsp;</td>
+			</tr>
+		</table>
+	</form>
+</div>
+
+<br /><br />
+
+<div class="content-header">
+	<table cellspacing="0">
+		<tr>
+			<td style="width:50%;"><h3 class="head"><?php echo Mage::helper('nvncbl_square')->__('Sync Status'); ?></h3></td>
+			<td class="a-right">
+				<?php echo $this->getButtonsHtml() ?>
+			</td>
+		</tr>
+	</table>
+</div>
+<div>
+	<?php echo $this->getGridHtml() ?>
+</div>
+
+	<form id="frm-catalog-sync-now" action="<?php echo $this->getUrl('*/*/catalogSyncNow', array('_current'=>true)); ?>" method="post">
+		<input name="form_key" type="hidden" value="<?php echo Mage::getSingleton('core/session')->getFormKey() ?>" />
+		<table>
+			<tr>
+				<td>
+					<br />
+					<button title="Synchronize Now" type="button" class="scalable task" onclick="javascript:document.getElementById('frm-catalog-sync-now').submit();" style=""><span><span><span>Synchronize Now</span></span></span></button>
+				</td>
+				<td>&nbsp;</td>
+			</tr>
+		</table>
+	</form>
