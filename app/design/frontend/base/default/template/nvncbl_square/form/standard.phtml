@@ -138,7 +138,9 @@ $enable_apple_pay = Mage::helper('nvncbl_square')->getEnableApplePay();
 
 									if( $$('#payment-buttons-container button').length > 0 ){ // Native Magento checkout
 										payment.save();
-									} else if( $$('#onestepcheckout-button-place-order').length > 0 ){ // Magestore OneStepCheckout
+									} else if( $$('.opc-btn-checkout').length > 0 ){ // IWD OPC
+                                        IWD_Submit();
+                                    } else if( $$('#onestepcheckout-button-place-order').length > 0 ){ // Magestore OneStepCheckout
 										oscPlaceOrder( $$('#onestepcheckout-button-place-order')[0] );
 									} else if( $$('#onepage-payment .op-step-btn').length > 0 ){ // Hhn OneClickCheckout
 										savePaymentMethod(true);
@@ -211,7 +213,31 @@ $enable_apple_pay = Mage::helper('nvncbl_square')->getEnableApplePay();
 										payment.save();
 									}
 								} );
-							} else if( $$('#onestepcheckout-button-place-order').length > 0 ){ // Magestore OneStepCheckout
+							} else if( $$('.opc-btn-checkout').length > 0 ){ // IWD OPC
+
+                                $j_opc('.opc-btn-checkout').click = null;
+                                $j_opc('.opc-btn-checkout').off();
+                                $j_opc('.opc-btn-checkout')[0].stopObserving( 'click' );
+
+                                $$('.opc-btn-checkout')[0].stopObserving( 'click' );
+                                $$('.opc-btn-checkout')[0].onclick = null;
+                                $$('.opc-btn-checkout')[0].on( 'click', function(e){
+                                    e.preventDefault();
+                                    if( $$('input[name*="payment\[method\]"]:checked')[0].value == 'nvncbl_square' ){
+                                        isRequestingNonce = false;
+                                        if( $$('[name="payment[saved_cc_id]"]:checked').length == 0 ){
+                                            if( !isRequestingNonce ){
+                                                isRequestingNonce = true;
+                                                paymentForm.requestCardNonce();
+                                            }
+                                        } else {
+                                            IWD_Submit();
+                                        }
+                                    } else {
+                                        IWD_Submit();
+                                    }
+                                } );
+                            } else if( $$('#onestepcheckout-button-place-order').length > 0 ){ // Magestore OneStepCheckout
 								$$('#onestepcheckout-button-place-order')[0].stopObserving( 'click' );
 								$$('#onestepcheckout-button-place-order')[0].onclick = null;
 								$$('#onestepcheckout-button-place-order')[0].on( 'click', function(e){
@@ -392,6 +418,67 @@ $enable_apple_pay = Mage::helper('nvncbl_square')->getEnableApplePay();
 
 		script.parentNode.insertBefore(resource, script);
 
+        function IWD_Submit(){
+            if (IWD.OPC.Checkout.disabledSave==true)
+                return;
+
+            // check agreements
+            var mis_aggree = false;
+            $j_opc('#checkout-agreements input[name*="agreement"]').each(function(){
+                if(!$j_opc(this).is(':checked')){
+                    mis_aggree = true;
+                }
+            });
+
+            if(mis_aggree){
+                $j_opc('.opc-message-container').html($j_opc('#agree_error').html());
+                $j_opc('.opc-message-wrapper').show();
+                IWD.OPC.Checkout.hideLoader();
+                IWD.OPC.Checkout.unlockPlaceOrder();
+                IWD.OPC.saveOrderStatus = false;
+                return false;
+            }
+            ///
+
+            var addressForm = new VarienForm('opc-address-form-billing');
+            if (!addressForm.validator.validate()){
+                return;
+            }
+
+            if (!$j_opc('input[name="billing[use_for_shipping]"]').prop('checked')){
+                var addressForm = new VarienForm('opc-address-form-shipping');
+                if (!addressForm.validator.validate()){
+                    return;
+                }
+            }
+
+            // check if LIPP enabled
+            if(typeof(IWD.LIPP) != 'undefined' && IWD.LIPP != undefined && IWD.LIPP != '' && IWD.LIPP)
+            {
+                if(IWD.LIPP.lipp_enabled){
+                    var method = payment.currentMethod;
+                    if(typeof(method) != 'undefined' && method != undefined && method != '' && method){
+                        if (method.indexOf('paypaluk_express')!=-1 || method.indexOf('paypal_express')!=-1){
+                            if (IWD.OPC.Checkout.config.comment!=="0")
+                                IWD.OPC.saveCustomerComment();
+                            IWD.LIPP.redirectPayment();
+                            return;
+                        }
+                    }
+                    }
+            }
+            ////
+
+            IWD.OPC.saveOrderStatus = true;
+            IWD.OPC.Plugin.dispatch('saveOrderBefore');
+            if (IWD.OPC.Checkout.isVirtual===false){
+                IWD.OPC.Checkout.lockPlaceOrder();
+                IWD.OPC.Shipping.saveShippingMethod();
+            }else{
+                IWD.OPC.validatePayment();
+            }
+        }
+
 	</script>
 
 	<style type="text/css">
@@ -450,7 +537,7 @@ $enable_apple_pay = Mage::helper('nvncbl_square')->getEnableApplePay();
 		<div id="sq-save-cc-yesno"><input type="checkbox" id="save-cc-yesno" name="payment[save-cc-yesno]" value="1" />&nbsp;<label for="save-cc-yesno" style="float:none;">Save for future use</label></div>
 	<?php } ?>
 
-	<form id="nonce-form" novalidate action="REPLACE_ME" method="post">
+	<?php /*<form id="nonce-form" novalidate action="REPLACE_ME" method="post">*/ ?>
 
 		<!--
 		Whenever a nonce is generated, it's assigned as the value of this hidden
@@ -466,7 +553,7 @@ $enable_apple_pay = Mage::helper('nvncbl_square')->getEnableApplePay();
 		<?php /*Commented out because we have set the existing "Continue" button to have paymentForm.requestCardNonce()
 		<?php /*<input type="button" onclick="paymentForm.requestCardNonce(); return false;" value="Submit" />*/ ?>
 
-	</form>
+	<?php /*</form>*/ ?>
 
 	<?php
 		if( Mage::getSingleton('customer/session')->isLoggedIn() && $enable_saved_cc ){
