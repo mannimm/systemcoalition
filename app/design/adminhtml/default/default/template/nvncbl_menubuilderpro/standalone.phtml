@@ -1,0 +1,10 @@
+<?php
+	$_menu = $this->getHtml('level-top');
+?>
+<?php if($_menu): ?>
+<div class="standalone-menu menu-<?php echo $this->getMenuId(); ?>-container">
+	<ul id="menu-nav">
+		<?php echo $_menu ?>
+	</ul>
+</div>
+<?php endif ?>
