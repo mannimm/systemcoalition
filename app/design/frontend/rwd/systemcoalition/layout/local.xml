@@ -41,4 +41,9 @@
 			<action method="setTemplate"><template>page/2columns-left.phtml</template></action>
 		</reference>
 	</catalog_category_layered>
+	<catalogsearch_result_index>
+		<reference name="root">
+			<action method="setTemplate"><template>page/1column.phtml</template></action>
+		</reference>
+	</catalogsearch_result_index>
 </layout>

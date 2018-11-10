@@ -83,7 +83,9 @@
                         ?>
                     </div>
                     <div class="product-secondary">
-                        <?php echo $this->getPriceHtml($_product, true) ?>
+                        <?php if(!$_product->getInformationalOnly() ){ ?>
+                            <?php echo $this->getPriceHtml($_product, true) ?>
+                        <?php } ?>
                     </div>
                     <div class="product-secondary">
                         <?php if(!$_product->canConfigure() && $_product->isSaleable()): ?>
@@ -95,12 +97,14 @@
                             <p class="action"><a title="<?php echo $this->quoteEscape($this->__('View Details')) ?>" class="button" href="<?php echo $_product->getProductUrl() ?>"><?php echo $this->__('View Details') ?></a></p>
                         <?php endif; ?>
                         <ul class="add-to-links">
-                            <?php if ($this->helper('wishlist')->isAllow()) : ?>
-                                <li><a href="<?php echo $this->helper('wishlist')->getAddUrl($_product) ?>" class="link-wishlist"><?php echo $this->__('Add to Wishlist') ?></a></li>
-                            <?php endif; ?>
-                            <?php if(false && $_compareUrl=$this->getAddToCompareUrl($_product)): ?>
-                                <li><span class="separator">|</span> <a href="<?php echo $_compareUrl ?>" class="link-compare"><?php echo $this->__('Add to Compare') ?></a></li>
-                            <?php endif; ?>
+                            <?php if(!$_product->getInformationalOnly() ){ ?>
+                                <?php if ($this->helper('wishlist')->isAllow()) : ?>
+                                    <li><a href="<?php echo $this->helper('wishlist')->getAddUrl($_product) ?>" class="link-wishlist"><?php echo $this->__('Add to Wishlist') ?></a></li>
+                                <?php endif; ?>
+                                <?php if(false && $_compareUrl=$this->getAddToCompareUrl($_product)): ?>
+                                    <li><span class="separator">|</span> <a href="<?php echo $_compareUrl ?>" class="link-compare"><?php echo $this->__('Add to Compare') ?></a></li>
+                                <?php endif; ?>
+                            <?php } ?>
                         </ul>
                     </div>
                     <div class="desc std">
